@@ -1,0 +1,47 @@
+name: login_admin_smoke
+base_url: http://localhost:8080
+goal: admin user can log in and enter the admin console
+lifecycle:
+  stage: ready_for_replay
+  ready_for_replay: true
+  last_status: not_run
+  last_explored_at: null
+  last_replayed_at: null
+  last_diagnosed_at: null
+mode:
+  explore: agent_browser
+  replay: chrome_devtools
+preconditions:
+  - current browser state is logged out
+  - local service is available
+credentials:
+  username: admin
+  password: 123456
+steps:
+  - action: open
+    target: /login
+    expected: login page visible
+  - action: type
+    target: username input
+    value_from: credentials.username
+    expected: username field contains value
+  - action: type
+    target: password input
+    value_from: credentials.password
+    expected: password field contains value
+  - action: click
+    target: login button
+    expected: authenticated landing page visible
+  - action: click
+    target: admin console entry
+    expected: admin console visible
+assertions:
+  - admin console title is visible
+  - user list is visible
+  - no severe console error
+artifacts:
+  - screenshot_on_failure
+  - console_logs
+  - network_summary
+notes:
+  - if a consent modal appears, close it before continuing

@@ -1,0 +1,92 @@
+# 唯一标识，建议与文件名表达同一个流程。
+# 推荐使用 snake_case，例如: admin_login_smoke
+name: replace_me
+
+# 被测系统的基础地址。
+# 本地项目通常写成 http://localhost:8080
+base_url: http://localhost:8080
+
+# 这条流程要验证的业务目标。
+# 写“结果”，不要写成长段操作说明。
+# 例如: admin user can log in and open admin console
+goal: describe the business goal
+
+# 工具分工。通常保持默认即可：
+# - explore: 让 agent_browser 先探索路径
+# - replay: 让 chrome_devtools 按步骤执行
+mode:
+  explore: agent_browser
+  replay: chrome_devtools
+
+# 执行前必须满足的条件。
+# 常见写法：
+# - current browser state is logged out
+# - test account exists
+# - local service is available
+preconditions:
+  - current browser state is logged out
+
+# 测试过程中需要用到的账号、密码、验证码、租户名等。
+# 如果没有账号信息，可以保持空对象 {}。
+# 如果有，就按下面这种结构填写：
+# credentials:
+#   username: admin
+#   password: 123456
+credentials: {}
+
+# 具体执行步骤。
+# 如果你已经清楚步骤，就直接填写。
+# 如果你暂时只知道业务目标，不知道稳定路径，可以先留空，
+# 后续通过 explore prompt 让 agent_browser 找到步骤后再补回来。
+#
+# 推荐每一步至少包含：
+# - action: 做什么，例如 open / type / click / select
+# - target: 操作对象，例如 login button / username input
+# - value 或 value_from: 输入值，二选一
+# - expected: 这一步完成后应该看到什么结果
+#
+# 示例：
+# steps:
+#   - action: open
+#     target: /login
+#     expected: login page visible
+#   - action: type
+#     target: username input
+#     value_from: credentials.username
+#     expected: username field contains value
+#   - action: type
+#     target: password input
+#     value_from: credentials.password
+#     expected: password field contains value
+#   - action: click
+#     target: login button
+#     expected: authenticated page visible
+steps: []
+
+# 最终断言，表示整条流程成功后必须成立的结果。
+# 这里不要写“点击按钮”这种动作，要写“应该发生什么”。
+# 例如：
+# assertions:
+#   - admin console title is visible
+#   - user list is visible
+#   - no severe console error
+assertions: []
+
+# 失败时希望默认保留哪些证据。
+# 一般建议保留默认值，通常够用了。
+# 可选项可以包括：
+# - screenshot_on_failure
+# - console_logs
+# - network_summary
+# - performance_trace
+artifacts:
+  - screenshot_on_failure
+  - console_logs
+  - network_summary
+
+# 额外说明，记录不稳定点、已知风险、补充背景。
+# 例如：
+# notes:
+#   - login page may redirect automatically
+#   - close consent modal before clicking login
+notes: []

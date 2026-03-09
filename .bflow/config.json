@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "prefix": "bflow",
+  "scope": "global",
+  "agents": [
+    "codex"
+  ],
+  "commands": [
+    "bflow-new",
+    "bflow-explore",
+    "bflow-replay",
+    "bflow-diagnose"
+  ]
+}

@@ -1,0 +1,80 @@
+# Unique identifier for the test flow.
+# Keep this aligned with the file name.
+# Recommended format: snake_case, for example: admin_login_smoke
+name: replace_me
+
+# Base URL of the system under test.
+# For local development this is often http://localhost:8080
+base_url: http://localhost:8080
+
+# The business outcome this test verifies.
+# Describe the result, not the full step-by-step instructions.
+goal: describe the business goal
+
+# Lifecycle metadata for the flow.
+# Recommended stages:
+# - draft: the case exists but the route is not confirmed yet
+# - ready_for_replay: steps are stable enough for deterministic execution
+# - needs_diagnosis: the latest replay failed and needs investigation
+#
+# Suggested rules:
+# - bflow-new sets stage=draft
+# - bflow-explore sets stage=ready_for_replay
+# - bflow-replay updates last_replayed_at and last_status
+# - bflow-diagnose updates last_diagnosed_at
+lifecycle:
+  stage: draft
+  ready_for_replay: false
+  last_status: not_run
+  last_explored_at: null
+  last_replayed_at: null
+  last_diagnosed_at: null
+
+# Tool routing. In most cases the defaults are correct:
+# - explore: agent_browser
+# - replay: chrome_devtools
+mode:
+  explore: agent_browser
+  replay: chrome_devtools
+
+# Conditions that must already be true before the flow starts.
+# Examples:
+# - current browser state is logged out
+# - local service is available
+# - test account exists
+preconditions:
+  - current browser state is logged out
+
+# Optional secrets or identity data used by the flow.
+# Leave as {} if the flow does not need credentials.
+# Example:
+# credentials:
+#   username: admin
+#   password: 123456
+credentials: {}
+
+# The concrete steps to execute.
+# If the flow is not mapped out yet, keep this empty and use bflow-explore later.
+# Recommended step fields:
+# - action: open / type / click / select
+# - target: what to interact with
+# - value or value_from: input payload if needed
+# - expected: what should be visible after the step
+steps: []
+
+# The final outcomes that must be true for the flow to pass.
+# Write outcomes, not actions.
+assertions: []
+
+# Evidence to capture when the flow fails.
+# Good defaults:
+# - screenshot_on_failure
+# - console_logs
+# - network_summary
+artifacts:
+  - screenshot_on_failure
+  - console_logs
+  - network_summary
+
+# Extra notes, unstable selectors, modal behavior, or known risks.
+notes: []
