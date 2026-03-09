@@ -286,6 +286,6 @@ python -m bflow doctor
 ## Reference Documents in This Repo
 
 - [Chinese README](./README.zh-CN.md)
-- [agent-browser-chrome-devtools-guide.md](/home/zlw/github/agent-browers-with-chrome-devtools/agent-browser-chrome-devtools-guide.md)
-- [prompts/new.md](/home/zlw/github/agent-browers-with-chrome-devtools/prompts/new.md)
-- [cases/templates/test-flow.template.yaml](/home/zlw/github/agent-browers-with-chrome-devtools/cases/templates/test-flow.template.yaml)
+- [agent-browser-chrome-devtools-guide.md](/home/zlw/github/bflow/agent-browser-chrome-devtools-guide.md)
+- [prompts/new.md](/home/zlw/github/bflow/prompts/new.md)
+- [cases/templates/test-flow.template.yaml](/home/zlw/github/bflow/cases/templates/test-flow.template.yaml)

@@ -48,12 +48,12 @@ notes:
 
 ### 先探索
 
-把 case 里的 `goal`、`base_url`、`preconditions` 发给 [prompts/explore.md](/home/zlw/github/agent-browers-with-chrome-devtools/prompts/explore.md)，让 `agent-browser` 生成可行步骤。
+把 case 里的 `goal`、`base_url`、`preconditions` 发给 [prompts/explore.md](/home/zlw/github/bflow/prompts/explore.md)，让 `agent-browser` 生成可行步骤。
 
 ### 再回放
 
-把 case 的 `steps`、`assertions` 发给 [prompts/replay.md](/home/zlw/github/agent-browers-with-chrome-devtools/prompts/replay.md)，让 `chrome-devtools` 执行。
+把 case 的 `steps`、`assertions` 发给 [prompts/replay.md](/home/zlw/github/bflow/prompts/replay.md)，让 `chrome-devtools` 执行。
 
 ### 失败后诊断
 
-把失败步骤和现象发给 [prompts/diagnose.md](/home/zlw/github/agent-browers-with-chrome-devtools/prompts/diagnose.md)。
+把失败步骤和现象发给 [prompts/diagnose.md](/home/zlw/github/bflow/prompts/diagnose.md)。
