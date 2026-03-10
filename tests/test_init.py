@@ -9,6 +9,7 @@ from pathlib import Path
 from bflow.cli import print_report
 from bflow.doctor import run_doctor
 from bflow.installer import InitConfig, load_saved_config, run_init
+from bflow.templates import copilot_global_prompts_dir
 
 
 class InitTest(unittest.TestCase):
@@ -59,8 +60,9 @@ class InitTest(unittest.TestCase):
             self.assertTrue((home_dir / ".config" / "opencode" / "commands" / "bflow-new.md").exists())
             self.assertTrue((home_dir / ".codex" / "prompts" / "bflow-new.md").exists())
             self.assertTrue((project_root / ".github" / "copilot-instructions.md").exists())
-            self.assertTrue((project_root / ".github" / "prompts" / "bflow-new.prompt.md").exists())
-            self.assertTrue(any("GitHub Copilot slash prompts are workspace-scoped in bflow" in warning for warning in report.warnings))
+            self.assertTrue((copilot_global_prompts_dir(home_dir) / "bflow-new.prompt.md").exists())
+            self.assertFalse((project_root / ".github" / "prompts" / "bflow-new.prompt.md").exists())
+            self.assertTrue(any("GitHub Copilot global prompt files were written to your VS Code profile prompts directory" in warning for warning in report.warnings))
 
     def test_update_uses_saved_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

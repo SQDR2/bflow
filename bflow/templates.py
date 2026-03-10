@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 
@@ -494,6 +495,8 @@ Example: /{prefix}-{workflow} {example}
 
 Follow this workflow:
 
+0. If `.bflow/` is missing in the current workspace, stop and tell the user to run `bflow init` in this project first.
+
 {steps[workflow]}
 """
 
@@ -512,6 +515,12 @@ def global_agent_files(prefix: str, agent: str, home_dir: Path) -> dict[Path, st
     if agent == "codex":
         return {
             home_dir / ".codex" / "prompts" / f"{prefix}-{workflow}.md": codex_prompt(prefix, workflow)
+            for workflow in WORKFLOW_NAMES
+        }
+    if agent == "copilot":
+        prompts_dir = copilot_global_prompts_dir(home_dir)
+        return {
+            prompts_dir / f"{prefix}-{workflow}.prompt.md": copilot_prompt(prefix, workflow)
             for workflow in WORKFLOW_NAMES
         }
     return {}
@@ -536,3 +545,11 @@ def project_agent_files(prefix: str, agent: str) -> dict[str, str]:
     if agent == "codex":
         return {}
     return {}
+
+
+def copilot_global_prompts_dir(home_dir: Path) -> Path:
+    if sys.platform == "darwin":
+        return home_dir / "Library" / "Application Support" / "Code" / "User" / "prompts"
+    if sys.platform.startswith("win"):
+        return home_dir / "AppData" / "Roaming" / "Code" / "User" / "prompts"
+    return home_dir / ".config" / "Code" / "User" / "prompts"

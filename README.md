@@ -56,7 +56,8 @@ This `.bflow/` directory is the project-local workflow library.
   - global scope: `~/.config/opencode/commands/`
 - `GitHub Copilot`
   - project scope: `.github/prompts/` and `.github/copilot-instructions.md`
-  - when you choose `global`, `bflow` still writes these workspace files because Copilot slash prompts are exposed from the current workspace
+  - global scope: the current VS Code profile `prompts/` directory for slash prompts, plus `.github/copilot-instructions.md` in the current repository
+  - default profile prompt path on Linux: `~/.config/Code/User/prompts/`
 - `Codex`
   - project scope: `AGENTS.md`
   - global scope: `~/.codex/prompts/`

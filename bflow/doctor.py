@@ -77,19 +77,16 @@ def check_shared_assets(report: DoctorReport, config: InitConfig) -> None:
 
 def check_project_adapters(report: DoctorReport, config: InitConfig) -> None:
     expected: list[Path] = [config.project_root / "AGENTS.md"]
+    copilot_instructions_path = config.project_root / ".github" / "copilot-instructions.md"
     if "copilot" in config.agents:
-        expected.append(config.project_root / ".github" / "copilot-instructions.md")
-        for relative_path in project_agent_files(config.prefix, "copilot"):
-            expected.append(config.project_root / relative_path)
+        expected.append(copilot_instructions_path)
     if config.scope in {"project", "both"}:
         for agent in config.agents:
-            if agent == "copilot":
-                continue
             for relative_path in project_agent_files(config.prefix, agent):
                 expected.append(config.project_root / relative_path)
     missing = [str(path) for path in expected if not path.exists()]
     if missing:
-        status = "fail" if config.scope in {"project", "both"} or "copilot" in config.agents else "warn"
+        status = "fail" if config.scope in {"project", "both"} or str(copilot_instructions_path) in missing else "warn"
         report.add("project-adapters", status, "Missing project adapter files:\n- " + "\n- ".join(missing))
     else:
         report.add("project-adapters", "ok", "Project adapter files are present.")

@@ -56,7 +56,8 @@
   - 全局级: `~/.config/opencode/commands/`
 - `GitHub Copilot`
   - 项目级: `.github/prompts/` 和 `.github/copilot-instructions.md`
-  - 即使选择 `global`，`bflow` 也仍会写入这些当前工作区文件，因为 Copilot 的 slash prompt 需要从当前工作区暴露
+  - 全局级: 当前 VS Code Profile 的 `prompts/` 目录用于 slash prompt，另外当前仓库仍会保留 `.github/copilot-instructions.md`
+  - Linux 下默认 profile prompt 路径: `~/.config/Code/User/prompts/`
 - `Codex`
   - 项目级: `AGENTS.md`
   - 全局级: `~/.codex/prompts/`
