@@ -117,6 +117,9 @@ class InitTest(unittest.TestCase):
             self.assertIn("https://github.com/ChromeDevTools/chrome-devtools-mcp", output)
             self.assertIn("agent-browser", output)
             self.assertIn("https://github.com/vercel-labs/agent-browser", output)
+            self.assertIn("npm install -g agent-browser", output)
+            self.assertIn("agent-browser install --with-deps", output)
+            self.assertIn("npx skills add vercel-labs/agent-browser", output)
 
 
 if __name__ == "__main__":
