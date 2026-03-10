@@ -77,12 +77,12 @@ Before you use replay or diagnose workflows in any agent, install `chrome-devtoo
 
 - https://github.com/ChromeDevTools/chrome-devtools-mcp
 
-If you plan to use exploration workflows, install your `agent-browser` integration as well.
+If you plan to use exploration workflows, the current agent must have `agent-browser` configured. If it does not, `/{prefix}-explore` must stop and return agent-specific setup guidance instead of falling back to `chrome-devtools`.
 
 ## Recommended workflow
 
 1. Use `/{prefix}-new` to create a new case draft from a natural-language test description.
-2. Use `/{prefix}-explore` to let `agent-browser` discover the stable path for that flow.
+2. Use `/{prefix}-explore` to let `agent-browser` discover the stable path for that flow only after it verifies the current agent configuration.
 3. Write the confirmed steps back into the case file under `.bflow/cases/`.
 4. Update the case lifecycle so the file reflects whether it is still a draft or ready for replay.
 5. Use `/{prefix}-replay` to execute the stable steps with `chrome-devtools`.
@@ -118,6 +118,8 @@ def agent_browser_setup_readme(agents: list[str]) -> str:
 3. 当前项目已经执行过 `bflow init`，存在 `.bflow/`
 
 缺任何一层，`/bflow-explore` 都不应继续执行探索。
+
+如果当前正在运行的 agent 不在 `.bflow/config.json` 的 `agents` 列表里，或者当前 agent 没有 `agent-browser`，那么 `/bflow-explore` 应立即停止，并按照当前 agent 配置返回安装或切换建议，而不是退化为 `chrome-devtools-mcp`。
 
 ## 1. 安装 agent-browser CLI
 
@@ -170,6 +172,14 @@ find .agents/skills/agent-browser -maxdepth 2 -type f
 /bflow-explore <case-name>
 ```
 
+如果验证失败，`/bflow-explore` 的回复应当：
+
+1. 明确指出当前正在运行的是哪个 agent
+2. 列出 `.bflow/config.json` 中允许的 agent
+3. 优先给出当前 agent 对应的 `agent-browser` 安装命令
+4. 如果当前 agent 不在配置里，提示用户重新执行 `bflow init --agents ...` 或切换到已配置的 agent
+5. 不得调用 `chrome-devtools` 或 `chrome-devtools-mcp` 继续探索
+
 ## 5. 在 bflow 里的使用顺序
 
 1. 在项目根目录执行 `bflow init`
@@ -207,6 +217,8 @@ Routing rules:
 2. If the steps are already known, use `{prefix}-replay`.
 3. If the user only has a natural-language request and no case file yet, use `{prefix}-new`.
 4. If a replay fails, use `{prefix}-diagnose`.
+5. During `{prefix}-explore`, only `agent_browser` may be used for browser actions. If it is unavailable, stop and return setup guidance based on `.bflow/config.json` and `.bflow/agent-browser-setup.md`.
+6. Never use `chrome_devtools` or `chrome-devtools-mcp` as a fallback during `{prefix}-explore`.
 ```
 """
 
@@ -242,22 +254,23 @@ Use this workflow when a case exists but the exact page path is missing or unsta
 
 The workflow should:
 
-1. Read the target case file from `.bflow/cases/`.
-2. Check the current agent tool configuration first.
-3. If `agent-browser` is not available in the current agent, stop immediately and tell the user that this agent is not configured with `agent-browser`.
-4. In that stop message, ask the user to install or connect `agent-browser` for the current agent before rerunning `{prefix}-explore`.
-5. Do not silently fall back to `chrome-devtools` during exploration.
-6. Use `agent-browser` to find a stable route for the business goal.
-7. Output structured steps with:
+1. Read `.bflow/README.md`, `.bflow/config.json`, `.bflow/agent-browser-setup.md`, and the target case file from `.bflow/cases/`.
+2. Check the current agent tool configuration before any browser action.
+3. Verify that the current running agent is declared in `.bflow/config.json` and that this agent has `agent-browser` available.
+4. If that verification fails, stop immediately. Do not use `chrome-devtools`, `chrome-devtools-mcp`, or any other browser automation tool to continue exploration.
+5. In that stop message, tailor the reply to the current agent configuration: name the current agent, list the configured agents from `.bflow/config.json`, and give the matching `agent-browser` setup command from `.bflow/agent-browser-setup.md` when available.
+6. If the current agent is not listed in `.bflow/config.json`, tell the user to rerun `bflow init --agents ...` for that agent or switch to one of the configured agents before rerunning `{prefix}-explore`.
+7. Only after verification passes, use `agent-browser` to find a stable route for the business goal.
+8. Output structured steps with:
    - `action`
    - `target`
    - `value` or `value_from`
    - `expected`
    - `risk`
-8. Update the case file with the discovered `steps`.
-9. Set `lifecycle.stage` to `ready_for_replay`, `lifecycle.ready_for_replay` to `true`, and `lifecycle.last_explored_at` to the current ISO 8601 timestamp.
-10. Explain any unstable selectors or modal risks.
-11. End by recommending `{prefix}-replay`.
+9. Update the case file with the discovered `steps`.
+10. Set `lifecycle.stage` to `ready_for_replay`, `lifecycle.ready_for_replay` to `true`, and `lifecycle.last_explored_at` to the current ISO 8601 timestamp.
+11. Explain any unstable selectors or modal risks.
+12. End by recommending `{prefix}-replay`.
 """
 
 
@@ -566,15 +579,16 @@ def workflow_body(prefix: str, workflow: str, request_expr: str) -> str:
 7. Create or update the case file.
 8. End by recommending `/{prefix}-explore` for the created case.""",
     "explore": f"""1. Read `.bflow/README.md` and the requested case file under `.bflow/cases/`.
-2. Inspect the current agent tool configuration before doing any browser actions.
-3. If `agent-browser` is unavailable, stop immediately and tell the user that the current agent is not configured with `agent-browser`.
-4. In that stop message, ask the user to install or connect `agent-browser` for the current agent before rerunning `/{prefix}-explore`.
-5. Do not silently fall back to `chrome-devtools`, and do not start deterministic replay-style execution in this workflow.
-6. Use `agent-browser` to find a stable route for the business goal.
-7. Write structured `steps` back into the case file.
-8. Update `lifecycle.stage` to `ready_for_replay`, set `lifecycle.ready_for_replay=true`, and write the current ISO 8601 timestamp to `lifecycle.last_explored_at`.
-9. Record unstable selectors, modals, redirects, or login-state risks in `notes`.
-10. End by recommending `/{prefix}-replay`.""",
+2. Read `.bflow/config.json` and `.bflow/agent-browser-setup.md` before doing any browser actions.
+3. Inspect the current agent tool configuration and verify that the current running agent is declared in `.bflow/config.json` and has `agent-browser` available.
+4. If verification fails, stop immediately. Do not use `chrome-devtools`, `chrome-devtools-mcp`, or any other browser automation tool in this workflow.
+5. In that stop message, tailor the reply to the current agent configuration: name the current agent, list the configured agents from `.bflow/config.json`, and provide the matching `agent-browser` setup command from `.bflow/agent-browser-setup.md` when available.
+6. If the current agent is not listed in `.bflow/config.json`, tell the user to rerun `bflow init --agents ...` for that agent or switch to one of the configured agents before rerunning `/{prefix}-explore`.
+7. Only after verification passes, use `agent-browser` to find a stable route for the business goal.
+8. Write structured `steps` back into the case file.
+9. Update `lifecycle.stage` to `ready_for_replay`, set `lifecycle.ready_for_replay=true`, and write the current ISO 8601 timestamp to `lifecycle.last_explored_at`.
+10. Record unstable selectors, modals, redirects, or login-state risks in `notes`.
+11. End by recommending `/{prefix}-replay`.""",
         "replay": """1. Read `.bflow/README.md` and the requested case file under `.bflow/cases/`.
 2. Use `chrome-devtools` to execute `steps` in order.
 3. Do not replan the route unless the case explicitly says exploration is still pending.

@@ -186,8 +186,9 @@ Expected result:
 Expected result:
 
 - `agent-browser` discovers or refines the actual route on the current page version
-- if the current agent does not have `agent-browser`, the workflow should stop immediately and tell the user to install or connect it for that agent
-- it should not silently fall back to `chrome-devtools` during exploration
+- before any browser action, the workflow reads `.bflow/config.json` and `.bflow/agent-browser-setup.md` to verify the current agent is configured for `agent-browser`
+- if the current agent does not have `agent-browser`, the workflow should stop immediately and return installation or switching guidance tailored to that agent configuration
+- it should not silently fall back to `chrome-devtools` or `chrome-devtools-mcp` during exploration
 - the case file is updated with structured `steps`
 - the case lifecycle is promoted to `ready_for_replay`
 - unstable selectors, modals, or redirect risks are recorded in `notes`

@@ -14,6 +14,8 @@
 
 缺任何一层，`/bflow-explore` 都不应继续执行探索。
 
+如果当前正在运行的 agent 不在 `.bflow/config.json` 的 `agents` 列表里，或者当前 agent 没有 `agent-browser`，那么 `/bflow-explore` 应立即停止，并按照当前 agent 配置返回安装或切换建议，而不是退化为 `chrome-devtools-mcp`。
+
 ## 1. 安装 agent-browser CLI
 
 推荐全局安装：
@@ -64,6 +66,14 @@ find .agents/skills/agent-browser -maxdepth 2 -type f
 ```text
 /bflow-explore <case-name>
 ```
+
+如果验证失败，`/bflow-explore` 的回复应当：
+
+1. 明确指出当前正在运行的是哪个 agent
+2. 列出 `.bflow/config.json` 中允许的 agent
+3. 优先给出当前 agent 对应的 `agent-browser` 安装命令
+4. 如果当前 agent 不在配置里，提示用户重新执行 `bflow init --agents ...` 或切换到已配置的 agent
+5. 不得调用 `chrome-devtools` 或 `chrome-devtools-mcp` 继续探索
 
 ## 5. 在 bflow 里的使用顺序
 

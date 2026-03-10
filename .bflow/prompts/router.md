@@ -12,4 +12,6 @@ Routing rules:
 2. If the steps are already known, use `bflow-replay`.
 3. If the user only has a natural-language request and no case file yet, use `bflow-new`.
 4. If a replay fails, use `bflow-diagnose`.
+5. During `bflow-explore`, only `agent_browser` may be used for browser actions. If it is unavailable, stop and return setup guidance based on `.bflow/config.json` and `.bflow/agent-browser-setup.md`.
+6. Never use `chrome_devtools` or `chrome-devtools-mcp` as a fallback during `bflow-explore`.
 ```

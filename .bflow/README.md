@@ -19,12 +19,12 @@ Before you use replay or diagnose workflows in any agent, install `chrome-devtoo
 
 - https://github.com/ChromeDevTools/chrome-devtools-mcp
 
-If you plan to use exploration workflows, install your `agent-browser` integration as well.
+If you plan to use exploration workflows, the current agent must have `agent-browser` configured. If it does not, `/bflow-explore` must stop and return agent-specific setup guidance instead of falling back to `chrome-devtools`.
 
 ## Recommended workflow
 
 1. Use `/bflow-new` to create a new case draft from a natural-language test description.
-2. Use `/bflow-explore` to let `agent-browser` discover the stable path for that flow.
+2. Use `/bflow-explore` to let `agent-browser` discover the stable path for that flow only after it verifies the current agent configuration.
 3. Write the confirmed steps back into the case file under `.bflow/cases/`.
 4. Update the case lifecycle so the file reflects whether it is still a draft or ready for replay.
 5. Use `/bflow-replay` to execute the stable steps with `chrome-devtools`.
