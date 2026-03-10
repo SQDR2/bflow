@@ -49,7 +49,7 @@ def run_init(config: InitConfig) -> InitReport:
     install_agents_md(config, report)
 
     if "copilot" in config.agents:
-        install_copilot_instructions(config, report)
+        install_copilot_adapter_files(config, report)
 
     if config.scope in {"project", "both"}:
         install_project_agent_files(config, report)
@@ -59,7 +59,7 @@ def run_init(config: InitConfig) -> InitReport:
 
     if config.scope == "global" and "copilot" in config.agents:
         report.warnings.append(
-            "GitHub Copilot prompt files are project-scoped. bflow wrote the project files under .github/ instead of a global installation."
+            "GitHub Copilot slash prompts are workspace-scoped in bflow. Even for --scope global, bflow writes .github/prompts/ and .github/copilot-instructions.md in the current project."
         )
 
     if config.scope == "project" and "codex" in config.agents:
@@ -99,8 +99,17 @@ def install_copilot_instructions(config: InitConfig, report: InitReport) -> None
     write_managed_block(path, managed, report)
 
 
+def install_copilot_adapter_files(config: InitConfig, report: InitReport) -> None:
+    install_copilot_instructions(config, report)
+    for relative_path, content in project_agent_files(config.prefix, "copilot").items():
+        path = config.project_root / relative_path
+        write_file(path, content, config.force, report)
+
+
 def install_project_agent_files(config: InitConfig, report: InitReport) -> None:
     for agent in config.agents:
+        if agent == "copilot":
+            continue
         files = project_agent_files(config.prefix, agent)
         for relative_path, content in files.items():
             path = config.project_root / relative_path

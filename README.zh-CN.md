@@ -56,7 +56,7 @@
   - 全局级: `~/.config/opencode/commands/`
 - `GitHub Copilot`
   - 项目级: `.github/prompts/` 和 `.github/copilot-instructions.md`
-  - Copilot 目前没有稳定的真正全局 prompt 安装方式，所以 `bflow` 会写项目文件
+  - 即使选择 `global`，`bflow` 也仍会写入这些当前工作区文件，因为 Copilot 的 slash prompt 需要从当前工作区暴露
 - `Codex`
   - 项目级: `AGENTS.md`
   - 全局级: `~/.codex/prompts/`

@@ -58,7 +58,9 @@ class InitTest(unittest.TestCase):
             self.assertTrue((home_dir / ".claude" / "skills" / "bflow-new" / "SKILL.md").exists())
             self.assertTrue((home_dir / ".config" / "opencode" / "commands" / "bflow-new.md").exists())
             self.assertTrue((home_dir / ".codex" / "prompts" / "bflow-new.md").exists())
-            self.assertTrue(any("GitHub Copilot prompt files are project-scoped" in warning for warning in report.warnings))
+            self.assertTrue((project_root / ".github" / "copilot-instructions.md").exists())
+            self.assertTrue((project_root / ".github" / "prompts" / "bflow-new.prompt.md").exists())
+            self.assertTrue(any("GitHub Copilot slash prompts are workspace-scoped in bflow" in warning for warning in report.warnings))
 
     def test_update_uses_saved_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
