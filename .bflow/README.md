@@ -8,6 +8,8 @@ This directory contains the shared browser-test workflow assets for this project
   - Workflow source prompts that describe how `bflow-new`, `bflow-explore`, `bflow-replay`, and `bflow-diagnose` should behave.
 - `cases/`
   - Reusable browser-test case definitions for this project.
+- `agent-browser-setup.md`
+    - Step-by-step setup guide for installing the `agent-browser` CLI and skill in this project.
 - `config.json`
   - The generated bflow configuration for this repo.
 

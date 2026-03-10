@@ -15,7 +15,7 @@ except ImportError:  # pragma: no cover - non-Unix fallback
 from bflow import __version__
 from bflow.doctor import format_report, run_doctor, summarize_status
 from bflow.installer import InitConfig, load_saved_config, run_init
-from bflow.templates import SUPPORTED_AGENTS
+from bflow.templates import SUPPORTED_AGENTS, agent_browser_skill_commands
 
 
 RESET = "\033[0m"
@@ -334,14 +334,17 @@ def print_report(report, config: InitConfig) -> None:
     print("     https://github.com/ChromeDevTools/chrome-devtools-mcp")
     print("  2. Install and configure `agent-browser` before using explore workflows.")
     print("     在使用 explore 工作流之前，请先完成 `agent-browser` 的安装与配置。")
+    print("     Full guide / 完整指引：`.bflow/agent-browser-setup.md`")
     print("     a. Install CLI: `npm install -g agent-browser`")
     print("        安装 CLI：`npm install -g agent-browser`")
     print("     b. Download browser: `agent-browser install`")
     print("        下载浏览器：`agent-browser install`")
     print("     c. Linux deps if needed: `agent-browser install --with-deps`")
     print("        如 Linux 缺依赖，可执行：`agent-browser install --with-deps`")
-    print("     d. Teach the current agent: `npx skills add vercel-labs/agent-browser`")
-    print("        让当前 Agent 认识它：`npx skills add vercel-labs/agent-browser`")
+    print("     d. Install the skill in this project for the selected agent:")
+    print("        在当前项目里，为已选择的 Agent 安装 skill：")
+    for name, command in agent_browser_skill_commands(config.agents):
+        print(f"        - {name}: `{command}`")
     print("     https://github.com/vercel-labs/agent-browser")
     print_section("Next steps / 下一步")
     print("  1. Restart your agent UI if slash commands are loaded only on startup.")

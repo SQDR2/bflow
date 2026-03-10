@@ -25,6 +25,7 @@ class InitTest(unittest.TestCase):
                 )
             )
             self.assertTrue((project_root / ".bflow" / "config.json").exists())
+            self.assertTrue((project_root / ".bflow" / "agent-browser-setup.md").exists())
             self.assertTrue((project_root / ".claude" / "skills" / "bflow-new" / "SKILL.md").exists())
             self.assertTrue((project_root / ".opencode" / "commands" / "bflow-replay.md").exists())
             self.assertTrue((project_root / ".github" / "prompts" / "bflow-diagnose.prompt.md").exists())
@@ -41,6 +42,9 @@ class InitTest(unittest.TestCase):
             case_template = (project_root / ".bflow" / "cases" / "templates" / "test-flow.template.yaml").read_text(encoding="utf-8")
             self.assertIn("lifecycle:", case_template)
             self.assertIn("stage: draft", case_template)
+            setup_guide = (project_root / ".bflow" / "agent-browser-setup.md").read_text(encoding="utf-8")
+            self.assertIn("github-copilot", setup_guide)
+            self.assertIn("npx skills add vercel-labs/agent-browser --skill agent-browser --agent codex -y", setup_guide)
 
     def test_non_project_scope_is_normalized_to_project(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -118,9 +122,10 @@ class InitTest(unittest.TestCase):
             self.assertIn("https://github.com/ChromeDevTools/chrome-devtools-mcp", output)
             self.assertIn("agent-browser", output)
             self.assertIn("https://github.com/vercel-labs/agent-browser", output)
+            self.assertIn(".bflow/agent-browser-setup.md", output)
             self.assertIn("npm install -g agent-browser", output)
             self.assertIn("agent-browser install --with-deps", output)
-            self.assertIn("npx skills add vercel-labs/agent-browser", output)
+            self.assertIn("--agent codex -y", output)
 
 
 if __name__ == "__main__":

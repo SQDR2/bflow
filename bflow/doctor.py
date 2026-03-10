@@ -58,6 +58,7 @@ def run_doctor(project_root: Path, home_dir: Path) -> DoctorReport:
 def check_shared_assets(report: DoctorReport, config: InitConfig) -> None:
     expected = [
         config.project_root / ".bflow" / "README.md",
+        config.project_root / ".bflow" / "agent-browser-setup.md",
         config.project_root / ".bflow" / "config.json",
         config.project_root / ".bflow" / "prompts" / "router.md",
         config.project_root / ".bflow" / "prompts" / "new.md",

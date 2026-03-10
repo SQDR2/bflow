@@ -29,6 +29,7 @@
 ```text
 .bflow/
 ├── README.md
+├── agent-browser-setup.md
 ├── config.json
 ├── prompts/
 │   ├── router.md
@@ -45,6 +46,8 @@
 ```
 
 这个 `.bflow/` 目录就是项目级的工作流资产库。
+
+其中 `.bflow/agent-browser-setup.md` 会集中记录当前项目里 `agent-browser` 的 CLI 安装、skills 安装、验证方式以及与 `bflow-explore` 的配合用法。
 
 同时，`bflow` 会按你选择的 agent 写入项目内的适配文件。这样设计是刻意的，因为所有 `bflow-*` 指令都依赖当前工作区里的 `.bflow/` 目录。
 

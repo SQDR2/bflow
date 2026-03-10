@@ -29,6 +29,7 @@ Running `bflow init` in a project creates a shared `.bflow/` directory:
 ```text
 .bflow/
 ├── README.md
+├── agent-browser-setup.md
 ├── config.json
 ├── prompts/
 │   ├── router.md
@@ -45,6 +46,8 @@ Running `bflow init` in a project creates a shared `.bflow/` directory:
 ```
 
 This `.bflow/` directory is the project-local workflow library.
+
+The `.bflow/agent-browser-setup.md` file is the single place that documents how to install the `agent-browser` CLI, add the correct skill for the selected agent, verify the setup, and then use it with `bflow-explore`.
 
 `bflow` also installs project-local agent adapter files based on the agents you choose. This is intentional because all `bflow-*` commands rely on the current workspace `.bflow/` directory.
 

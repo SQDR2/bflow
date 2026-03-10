@@ -43,6 +43,7 @@ def shared_project_files(prefix: str, agents: list[str], scope: str) -> dict[str
     return {
         ".bflow/config.json": json.dumps(config, indent=2) + "\n",
         ".bflow/README.md": shared_readme(prefix),
+        ".bflow/agent-browser-setup.md": agent_browser_setup_readme(agents),
         ".bflow/prompts/router.md": router_prompt(prefix),
         ".bflow/prompts/new.md": new_prompt(prefix),
         ".bflow/prompts/explore.md": explore_prompt(prefix),
@@ -65,6 +66,8 @@ This directory contains the shared browser-test workflow assets for this project
   - Workflow source prompts that describe how `{prefix}-new`, `{prefix}-explore`, `{prefix}-replay`, and `{prefix}-diagnose` should behave.
 - `cases/`
   - Reusable browser-test case definitions for this project.
+- `agent-browser-setup.md`
+    - Step-by-step setup guide for installing the `agent-browser` CLI and skill in this project.
 - `config.json`
   - The generated bflow configuration for this repo.
 
@@ -93,6 +96,100 @@ Create new case files under `.bflow/cases/`. A good default is:
 
 Start from `.bflow/cases/templates/test-flow.template.yaml`.
 """
+
+
+def agent_browser_setup_readme(agents: list[str]) -> str:
+    selected_commands = agent_browser_skill_commands(agents)
+    commands_block = "\n".join(
+        f"- {name}: `{command}`" for name, command in selected_commands
+    )
+    return f"""# agent-browser 安装与接入指南
+
+这份文档说明如何在当前项目里把 `agent-browser` 配好给 bflow 使用。
+
+## 为什么需要两层安装
+
+`agent-browser` 本体是浏览器自动化 CLI，不是 MCP server。
+
+要让 `/bflow-explore` 真正可用，需要同时满足：
+
+1. 本机有 `agent-browser` 可执行命令
+2. 当前 AI agent 已安装 `agent-browser` skill，知道如何调用它
+3. 当前项目已经执行过 `bflow init`，存在 `.bflow/`
+
+缺任何一层，`/bflow-explore` 都不应继续执行探索。
+
+## 1. 安装 agent-browser CLI
+
+推荐全局安装：
+
+```bash
+npm install -g agent-browser
+agent-browser install
+```
+
+Linux 若缺少系统依赖，可执行：
+
+```bash
+agent-browser install --with-deps
+```
+
+## 2. 在当前项目里为目标 agent 安装 skill
+
+请在**当前项目根目录**执行。针对本项目当前选择的 agent，推荐命令如下：
+
+{commands_block}
+
+如果你想给更多 agent 一起安装，也可以分别执行对应命令。
+
+## 3. 安装后应看到什么
+
+成功后，当前项目里通常会出现：
+
+- `.agents/skills/agent-browser/SKILL.md`
+- `.agents/skills/agent-browser/references/`
+- `skills-lock.json`
+
+## 4. 验证
+
+先确认 CLI 可用：
+
+```bash
+agent-browser --help
+```
+
+再确认当前项目里 skill 已安装：
+
+```bash
+find .agents/skills/agent-browser -maxdepth 2 -type f
+```
+
+最后重启当前 agent UI，再执行：
+
+```text
+/bflow-explore <case-name>
+```
+
+## 5. 在 bflow 里的使用顺序
+
+1. 在项目根目录执行 `bflow init`
+2. 安装 `agent-browser` CLI
+3. 在项目根目录安装对应 agent 的 `agent-browser` skill
+4. 重启 agent UI
+5. 先执行 `/bflow-new` 创建 case
+6. 再执行 `/bflow-explore` 让 `agent-browser` 发现稳定路径
+7. 最后执行 `/bflow-replay` 用 `chrome-devtools` 做确定性回放
+"""
+
+
+def agent_browser_skill_commands(agents: list[str]) -> list[tuple[str, str]]:
+    command_map = {
+        "claude": ("Claude Code", "npx skills add vercel-labs/agent-browser --skill agent-browser --agent claude-code -y"),
+        "opencode": ("OpenCode", "npx skills add vercel-labs/agent-browser --skill agent-browser --agent opencode -y"),
+        "copilot": ("GitHub Copilot", "npx skills add vercel-labs/agent-browser --skill agent-browser --agent github-copilot -y"),
+        "codex": ("Codex", "npx skills add vercel-labs/agent-browser --skill agent-browser --agent codex -y"),
+    }
+    return [command_map[agent] for agent in agents if agent in command_map]
 
 
 def router_prompt(prefix: str) -> str:
