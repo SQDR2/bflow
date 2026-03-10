@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: Diagnose a failed browser-test replay using console, network, and DOM evidence.
 ---
 

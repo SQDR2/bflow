@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: Execute a saved browser-test case with chrome-devtools.
 ---
 

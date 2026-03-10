@@ -439,7 +439,7 @@ def copilot_prompt(prefix: str, workflow: str) -> str:
         request_expr = "${input:case:Enter the case name or path}"
     body = workflow_body(prefix, workflow, request_expr)
     return f"""---
-mode: agent
+agent: agent
 description: {description}
 ---
 

@@ -33,6 +33,7 @@ class InitTest(unittest.TestCase):
             self.assertIn('argument-hint: "[natural-language test request]"', claude_skill)
             self.assertIn("Example: /bflow-new", claude_skill)
             copilot_prompt = (project_root / ".github" / "prompts" / "bflow-replay.prompt.md").read_text(encoding="utf-8")
+            self.assertIn("agent: agent", copilot_prompt)
             self.assertIn("${input:case:Enter the case name or path}", copilot_prompt)
             explore_prompt = (project_root / ".github" / "prompts" / "bflow-explore.prompt.md").read_text(encoding="utf-8")
             self.assertIn("If `agent-browser` is unavailable, stop immediately", explore_prompt)

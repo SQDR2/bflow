@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: Create or update a browser-test case draft from a natural-language request.
 ---
 
