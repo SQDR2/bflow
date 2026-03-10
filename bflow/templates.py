@@ -146,17 +146,21 @@ Use this workflow when a case exists but the exact page path is missing or unsta
 The workflow should:
 
 1. Read the target case file from `.bflow/cases/`.
-2. Use `agent-browser` to find a stable route for the business goal.
-3. Output structured steps with:
+2. Check the current agent tool configuration first.
+3. If `agent-browser` is not available in the current agent, stop immediately and tell the user that this agent is not configured with `agent-browser`.
+4. In that stop message, ask the user to install or connect `agent-browser` for the current agent before rerunning `{prefix}-explore`.
+5. Do not silently fall back to `chrome-devtools` during exploration.
+6. Use `agent-browser` to find a stable route for the business goal.
+7. Output structured steps with:
    - `action`
    - `target`
    - `value` or `value_from`
    - `expected`
    - `risk`
-4. Update the case file with the discovered `steps`.
-5. Set `lifecycle.stage` to `ready_for_replay`, `lifecycle.ready_for_replay` to `true`, and `lifecycle.last_explored_at` to the current ISO 8601 timestamp.
-6. Explain any unstable selectors or modal risks.
-7. End by recommending `{prefix}-replay`.
+8. Update the case file with the discovered `steps`.
+9. Set `lifecycle.stage` to `ready_for_replay`, `lifecycle.ready_for_replay` to `true`, and `lifecycle.last_explored_at` to the current ISO 8601 timestamp.
+10. Explain any unstable selectors or modal risks.
+11. End by recommending `{prefix}-replay`.
 """
 
 
@@ -464,12 +468,16 @@ def workflow_body(prefix: str, workflow: str, request_expr: str) -> str:
 6. Do not invent missing selectors or paths.
 7. Create or update the case file.
 8. End by recommending `/{prefix}-explore` for the created case.""",
-        "explore": f"""1. Read `.bflow/README.md` and the requested case file under `.bflow/cases/`.
-2. Use `agent-browser` to find a stable route for the business goal.
-3. Write structured `steps` back into the case file.
-4. Update `lifecycle.stage` to `ready_for_replay`, set `lifecycle.ready_for_replay=true`, and write the current ISO 8601 timestamp to `lifecycle.last_explored_at`.
-5. Record unstable selectors, modals, redirects, or login-state risks in `notes`.
-6. End by recommending `/{prefix}-replay`.""",
+    "explore": f"""1. Read `.bflow/README.md` and the requested case file under `.bflow/cases/`.
+2. Inspect the current agent tool configuration before doing any browser actions.
+3. If `agent-browser` is unavailable, stop immediately and tell the user that the current agent is not configured with `agent-browser`.
+4. In that stop message, ask the user to install or connect `agent-browser` for the current agent before rerunning `/{prefix}-explore`.
+5. Do not silently fall back to `chrome-devtools`, and do not start deterministic replay-style execution in this workflow.
+6. Use `agent-browser` to find a stable route for the business goal.
+7. Write structured `steps` back into the case file.
+8. Update `lifecycle.stage` to `ready_for_replay`, set `lifecycle.ready_for_replay=true`, and write the current ISO 8601 timestamp to `lifecycle.last_explored_at`.
+9. Record unstable selectors, modals, redirects, or login-state risks in `notes`.
+10. End by recommending `/{prefix}-replay`.""",
         "replay": """1. Read `.bflow/README.md` and the requested case file under `.bflow/cases/`.
 2. Use `chrome-devtools` to execute `steps` in order.
 3. Do not replan the route unless the case explicitly says exploration is still pending.

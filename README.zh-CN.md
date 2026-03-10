@@ -185,6 +185,8 @@ bflow doctor
 预期结果：
 
 - `agent-browser` 负责发现或修正当前版本页面下的实际路径
+- 如果当前 agent 没有接入 `agent-browser`，应立即中止并明确提示用户先为该 agent 安装或接入 `agent-browser`
+- 不应静默退化为直接使用 `chrome-devtools` 执行探索流程
 - case 文件会写入结构化的 `steps`
 - case 的 `lifecycle` 会被提升到 `ready_for_replay`
 - 不稳定的选择器、弹窗、重定向风险会记录到 `notes`
