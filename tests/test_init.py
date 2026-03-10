@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import tempfile
 import unittest
 from pathlib import Path
 
+from bflow.cli import print_report
 from bflow.doctor import run_doctor
 from bflow.installer import InitConfig, load_saved_config, run_init
 
@@ -94,6 +97,26 @@ class InitTest(unittest.TestCase):
             self.assertEqual(names["shared-assets"], "ok")
             self.assertEqual(names["project-adapters"], "ok")
             self.assertEqual(names["global-adapters"], "ok")
+
+    def test_print_report_lists_both_browser_tool_prerequisites(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            project_root.mkdir()
+            config = InitConfig(
+                project_root=project_root,
+                scope="project",
+                agents=["codex"],
+                prefix="bflow",
+            )
+            report = run_init(config)
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                print_report(report, config)
+            output = stdout.getvalue()
+            self.assertIn("chrome-devtools-mcp", output)
+            self.assertIn("https://github.com/ChromeDevTools/chrome-devtools-mcp", output)
+            self.assertIn("agent-browser", output)
+            self.assertIn("https://github.com/vercel-labs/agent-browser", output)
 
 
 if __name__ == "__main__":
