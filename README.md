@@ -46,21 +46,16 @@ Running `bflow init` in a project creates a shared `.bflow/` directory:
 
 This `.bflow/` directory is the project-local workflow library.
 
-`bflow` also installs agent-specific adapter files based on the agents you choose:
+`bflow` also installs project-local agent adapter files based on the agents you choose. This is intentional because all `bflow-*` commands rely on the current workspace `.bflow/` directory.
 
 - `Claude Code`
-  - project scope: `.claude/skills/`
-  - global scope: `~/.claude/skills/`
+  - `.claude/skills/`
 - `OpenCode`
-  - project scope: `.opencode/commands/`
-  - global scope: `~/.config/opencode/commands/`
+  - `.opencode/commands/`
 - `GitHub Copilot`
-  - project scope: `.github/prompts/` and `.github/copilot-instructions.md`
-  - global scope: the current VS Code profile `prompts/` directory for slash prompts, plus `.github/copilot-instructions.md` in the current repository
-  - default profile prompt path on Linux: `~/.config/Code/User/prompts/`
+  - `.github/prompts/` and `.github/copilot-instructions.md`
 - `Codex`
-  - project scope: `AGENTS.md`
-  - global scope: `~/.codex/prompts/`
+  - `AGENTS.md`
 
 ## Prerequisites
 
@@ -115,7 +110,7 @@ bflow init
 Non-interactive:
 
 ```bash
-bflow init --scope both --agents claude,opencode,copilot,codex --prefix bflow
+bflow init --agents claude,opencode,copilot,codex --prefix bflow
 ```
 
 ### `bflow update`
@@ -136,7 +131,7 @@ bflow agents
 
 ### `bflow doctor`
 
-Check whether the current project and the selected install locations still contain the files that `bflow init` generated.
+Check whether the current project still contains the files that `bflow init` generated.
 
 ```bash
 bflow doctor
@@ -148,16 +143,14 @@ When you run `bflow init` without explicit flags, it enters interactive mode.
 
 It asks for:
 
-1. Install scope: `project / global / both`
-2. Target agents
-3. Command prefix, such as `bflow`
-4. A final confirmation summary before writing files
+1. Target agents
+2. Command prefix, such as `bflow`
+3. A final confirmation summary before writing files
 
 After installation, it prints a grouped summary:
 
 - Shared workflow files
 - Project adapter files
-- Global adapter files
 - Warnings
 
 You can also run `bflow doctor` later to verify that the generated files are still present.

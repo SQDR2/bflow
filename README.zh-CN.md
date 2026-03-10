@@ -46,21 +46,16 @@
 
 这个 `.bflow/` 目录就是项目级的工作流资产库。
 
-同时，`bflow` 会按你选择的 agent 写入对应的适配文件：
+同时，`bflow` 会按你选择的 agent 写入项目内的适配文件。这样设计是刻意的，因为所有 `bflow-*` 指令都依赖当前工作区里的 `.bflow/` 目录。
 
 - `Claude Code`
-  - 项目级: `.claude/skills/`
-  - 全局级: `~/.claude/skills/`
+  - `.claude/skills/`
 - `OpenCode`
-  - 项目级: `.opencode/commands/`
-  - 全局级: `~/.config/opencode/commands/`
+  - `.opencode/commands/`
 - `GitHub Copilot`
-  - 项目级: `.github/prompts/` 和 `.github/copilot-instructions.md`
-  - 全局级: 当前 VS Code Profile 的 `prompts/` 目录用于 slash prompt，另外当前仓库仍会保留 `.github/copilot-instructions.md`
-  - Linux 下默认 profile prompt 路径: `~/.config/Code/User/prompts/`
+  - `.github/prompts/` 和 `.github/copilot-instructions.md`
 - `Codex`
-  - 项目级: `AGENTS.md`
-  - 全局级: `~/.codex/prompts/`
+  - `AGENTS.md`
 
 ## 前置依赖
 
@@ -117,7 +112,7 @@ bflow init
 非交互式：
 
 ```bash
-bflow init --scope both --agents claude,opencode,copilot,codex --prefix bflow
+bflow init --agents claude,opencode,copilot,codex --prefix bflow
 ```
 
 ### `bflow update`
@@ -138,7 +133,7 @@ bflow agents
 
 ### `bflow doctor`
 
-检查当前项目和安装位置里，`bflow init` 生成的文件是否仍然存在。
+检查当前项目里，`bflow init` 生成的文件是否仍然存在。
 
 ```bash
 bflow doctor
@@ -150,16 +145,14 @@ bflow doctor
 
 它会依次让你选择：
 
-1. 安装范围 `project / global / both`
-2. 目标 agent 列表
-3. 命令前缀，例如 `bflow`
-4. 安装前确认摘要
+1. 目标 agent 列表
+2. 命令前缀，例如 `bflow`
+3. 安装前确认摘要
 
 安装完成后，它会按下面几类打印结果：
 
 - 共享工作流文件
 - 项目级适配文件
-- 全局适配文件
 - 警告信息
 
 后续你也可以执行 `bflow doctor` 来检查生成文件是否还完整。

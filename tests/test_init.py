@@ -9,11 +9,8 @@ from pathlib import Path
 from bflow.cli import print_report
 from bflow.doctor import run_doctor
 from bflow.installer import InitConfig, load_saved_config, run_init
-from bflow.templates import copilot_global_prompts_dir
-
-
 class InitTest(unittest.TestCase):
-    def test_project_scope_scaffolds_shared_assets_and_project_adapters(self) -> None:
+    def test_init_scaffolds_shared_assets_and_project_adapters(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp) / "project"
             home_dir = Path(tmp) / "home"
@@ -32,7 +29,6 @@ class InitTest(unittest.TestCase):
             self.assertTrue((project_root / ".opencode" / "commands" / "bflow-replay.md").exists())
             self.assertTrue((project_root / ".github" / "prompts" / "bflow-diagnose.prompt.md").exists())
             self.assertTrue((project_root / "AGENTS.md").exists())
-            self.assertTrue(any("Codex native slash prompts" in warning for warning in report.warnings))
             claude_skill = (project_root / ".claude" / "skills" / "bflow-new" / "SKILL.md").read_text(encoding="utf-8")
             self.assertIn('argument-hint: "[natural-language test request]"', claude_skill)
             self.assertIn("Example: /bflow-new", claude_skill)
@@ -42,7 +38,7 @@ class InitTest(unittest.TestCase):
             self.assertIn("lifecycle:", case_template)
             self.assertIn("stage: draft", case_template)
 
-    def test_global_scope_writes_global_files(self) -> None:
+    def test_non_project_scope_is_normalized_to_project(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp) / "project"
             home_dir = Path(tmp) / "home"
@@ -56,13 +52,10 @@ class InitTest(unittest.TestCase):
                     home_dir=home_dir,
                 )
             )
-            self.assertTrue((home_dir / ".claude" / "skills" / "bflow-new" / "SKILL.md").exists())
-            self.assertTrue((home_dir / ".config" / "opencode" / "commands" / "bflow-new.md").exists())
-            self.assertTrue((home_dir / ".codex" / "prompts" / "bflow-new.md").exists())
             self.assertTrue((project_root / ".github" / "copilot-instructions.md").exists())
-            self.assertTrue((copilot_global_prompts_dir(home_dir) / "bflow-new.prompt.md").exists())
-            self.assertFalse((project_root / ".github" / "prompts" / "bflow-new.prompt.md").exists())
-            self.assertTrue(any("GitHub Copilot global prompt files were written to your VS Code profile prompts directory" in warning for warning in report.warnings))
+            self.assertTrue((project_root / ".github" / "prompts" / "bflow-new.prompt.md").exists())
+            self.assertFalse((home_dir / ".config" / "Code" / "User" / "prompts" / "bflow-new.prompt.md").exists())
+            self.assertTrue(any("bflow init now always installs project-local files" in warning for warning in report.warnings))
 
     def test_update_uses_saved_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -89,7 +82,7 @@ class InitTest(unittest.TestCase):
             run_init(
                 InitConfig(
                     project_root=project_root,
-                    scope="both",
+                    scope="project",
                     agents=["claude", "opencode", "copilot", "codex"],
                     prefix="bflow",
                     home_dir=home_dir,

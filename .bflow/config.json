@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
   "prefix": "bflow",
-  "scope": "global",
+  "scope": "project",
   "agents": [
     "copilot"
   ],

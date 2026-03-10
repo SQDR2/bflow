@@ -4,8 +4,8 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from bflow.installer import InitConfig
-from bflow.templates import global_agent_files, project_agent_files
+from bflow.installer import InitConfig, normalize_scope
+from bflow.templates import project_agent_files
 
 
 @dataclass
@@ -42,7 +42,7 @@ def run_doctor(project_root: Path, home_dir: Path) -> DoctorReport:
     raw = json.loads(config_path.read_text(encoding="utf-8"))
     config = InitConfig(
         project_root=project_root,
-        scope=raw["scope"],
+        scope=normalize_scope(raw.get("scope")),
         agents=list(raw["agents"]),
         prefix=raw["prefix"],
         home_dir=home_dir,
@@ -80,32 +80,19 @@ def check_project_adapters(report: DoctorReport, config: InitConfig) -> None:
     copilot_instructions_path = config.project_root / ".github" / "copilot-instructions.md"
     if "copilot" in config.agents:
         expected.append(copilot_instructions_path)
-    if config.scope in {"project", "both"}:
-        for agent in config.agents:
-            for relative_path in project_agent_files(config.prefix, agent):
-                expected.append(config.project_root / relative_path)
+    for agent in config.agents:
+        for relative_path in project_agent_files(config.prefix, agent):
+            expected.append(config.project_root / relative_path)
     missing = [str(path) for path in expected if not path.exists()]
     if missing:
-        status = "fail" if config.scope in {"project", "both"} or str(copilot_instructions_path) in missing else "warn"
+        status = "fail"
         report.add("project-adapters", status, "Missing project adapter files:\n- " + "\n- ".join(missing))
     else:
         report.add("project-adapters", "ok", "Project adapter files are present.")
 
 
 def check_global_adapters(report: DoctorReport, config: InitConfig) -> None:
-    if config.scope not in {"global", "both"}:
-        report.add("global-adapters", "ok", "Global adapter files are not required for this installation scope.")
-        return
-
-    expected: list[Path] = []
-    for agent in config.agents:
-        for path in global_agent_files(config.prefix, agent, config.home_dir):
-            expected.append(path)
-    missing = [str(path) for path in expected if not path.exists()]
-    if missing:
-        report.add("global-adapters", "fail", "Missing global adapter files:\n- " + "\n- ".join(missing))
-    else:
-        report.add("global-adapters", "ok", "Global adapter files are present.")
+    report.add("global-adapters", "ok", "Global adapter files are no longer used. bflow commands rely on project-local assets under .bflow/.")
 
 
 def summarize_status(report: DoctorReport) -> str:

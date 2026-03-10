@@ -8,7 +8,6 @@ from bflow.templates import (
     SUPPORTED_AGENTS,
     agents_block,
     copilot_instructions_block,
-    global_agent_files,
     project_agent_files,
     shared_project_files,
 )
@@ -42,6 +41,8 @@ class InitReport:
 
 
 def run_init(config: InitConfig) -> InitReport:
+    requested_scope = config.scope
+    config.scope = normalize_scope(config.scope)
     validate_config(config)
     report = InitReport()
 
@@ -51,28 +52,17 @@ def run_init(config: InitConfig) -> InitReport:
     if "copilot" in config.agents:
         install_copilot_instructions(config, report)
 
-    if config.scope in {"project", "both"}:
-        install_project_agent_files(config, report)
+    install_project_agent_files(config, report)
 
-    if config.scope in {"global", "both"}:
-        install_global_agent_files(config, report)
-
-    if config.scope == "global" and "copilot" in config.agents:
+    if requested_scope not in {None, "project"}:
         report.warnings.append(
-            "GitHub Copilot global prompt files were written to your VS Code profile prompts directory, while .github/copilot-instructions.md remains project-scoped in the current repository."
-        )
-
-    if config.scope == "project" and "codex" in config.agents:
-        report.warnings.append(
-            "Codex native slash prompts are typically installed globally. bflow only wrote AGENTS.md for Codex in project scope."
+            "bflow init now always installs project-local files because bflow commands depend on the current workspace .bflow/ directory."
         )
 
     return report
 
 
 def validate_config(config: InitConfig) -> None:
-    if config.scope not in {"project", "global", "both"}:
-        raise ValueError(f"unsupported scope: {config.scope}")
     if not config.prefix or any(ch.isspace() for ch in config.prefix):
         raise ValueError("prefix must be a non-empty value without spaces")
     unknown = sorted(set(config.agents) - set(SUPPORTED_AGENTS))
@@ -80,8 +70,12 @@ def validate_config(config: InitConfig) -> None:
         raise ValueError(f"unsupported agents: {', '.join(unknown)}")
 
 
+def normalize_scope(scope: str | None) -> str:
+    return "project"
+
+
 def install_shared_assets(config: InitConfig, report: InitReport) -> None:
-    files = shared_project_files(config.prefix, config.agents, config.scope)
+    files = shared_project_files(config.prefix, config.agents, "project")
     for relative_path, content in files.items():
         path = config.project_root / relative_path
         write_file(path, content, config.force, report)
@@ -104,13 +98,6 @@ def install_project_agent_files(config: InitConfig, report: InitReport) -> None:
         files = project_agent_files(config.prefix, agent)
         for relative_path, content in files.items():
             path = config.project_root / relative_path
-            write_file(path, content, config.force, report)
-
-
-def install_global_agent_files(config: InitConfig, report: InitReport) -> None:
-    for agent in config.agents:
-        files = global_agent_files(config.prefix, agent, config.home_dir)
-        for path, content in files.items():
             write_file(path, content, config.force, report)
 
 
@@ -157,7 +144,7 @@ def load_saved_config(project_root: Path) -> InitConfig:
     raw = json.loads(config_path.read_text(encoding="utf-8"))
     return InitConfig(
         project_root=project_root,
-        scope=raw["scope"],
+        scope=normalize_scope(raw.get("scope")),
         agents=list(raw["agents"]),
         prefix=raw["prefix"],
     )

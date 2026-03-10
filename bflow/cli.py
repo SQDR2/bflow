@@ -33,7 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def add_common_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--scope", choices=("project", "global", "both"), help="Where to install agent adapters.")
+    parser.add_argument("--scope", choices=("project", "global", "both"), help=argparse.SUPPRESS)
     parser.add_argument("--agents", help="Comma-separated agents. Supported: claude,opencode,copilot,codex")
     parser.add_argument("--prefix", default=None, help="Slash-command prefix. Default: bflow")
     parser.add_argument("--force", action="store_true", help="Overwrite generated files even if they already exist.")
@@ -76,10 +76,10 @@ def run_agents(plain: bool) -> int:
 
 
 def run_init_command(args: argparse.Namespace) -> int:
-    interactive = not any([args.scope, args.agents, args.prefix])
+    interactive = not any([args.agents, args.prefix])
     config = InitConfig(
         project_root=Path(args.project_root).resolve(),
-        scope=args.scope or ask_scope(),
+        scope="project",
         agents=parse_agents(args.agents) if args.agents else ask_agents(),
         prefix=args.prefix or ask_prefix(),
         force=args.force,
@@ -110,27 +110,6 @@ def run_doctor_command(args: argparse.Namespace) -> int:
     report = run_doctor(project_root=project_root, home_dir=home_dir)
     print(format_report(report), end="")
     return 1 if summarize_status(report) == "fail" else 0
-
-
-def ask_scope() -> str:
-    options = [
-        ("project", "Install project-local files only"),
-        ("global", "Install global agent files only"),
-        ("both", "Install both project-local and global files"),
-    ]
-    while True:
-        print("")
-        print("Install scope / 安装范围:")
-        for index, (value, description) in enumerate(options, start=1):
-            print(f"{index}. {value:<7} {description}")
-        value = input("Choose 1-3 (default: 1): ").strip().lower()
-        if not value:
-            return "project"
-        if value in {"1", "2", "3"}:
-            return options[int(value) - 1][0]
-        if value in {"project", "global", "both"}:
-            return value
-        print("Please enter 1, 2, 3, or one of: project, global, both.")
 
 
 def ask_agents() -> list[str]:
@@ -177,7 +156,6 @@ def ask_confirmation(config: InitConfig) -> bool:
     print("")
     print("Initialization summary / 初始化摘要:")
     print(f"- Project root: {config.project_root}")
-    print(f"- Scope: {config.scope}")
     print(f"- Agents: {', '.join(config.agents)}")
     print(f"- Slash commands: /{config.prefix}-new, /{config.prefix}-explore, /{config.prefix}-replay, /{config.prefix}-diagnose")
     value = input("Continue? [Y/n]: ").strip().lower()
@@ -208,7 +186,6 @@ def print_report(report, config: InitConfig) -> None:
     print("bflow initialization complete / 初始化完成。")
     print(f"Project root: {config.project_root}")
     print(f"Prefix: /{config.prefix}-*")
-    print(f"Scope: {config.scope}")
     print(f"Agents: {', '.join(config.agents)}")
     print("")
     print(f"Created: {len(report.created)}")
