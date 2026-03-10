@@ -11,6 +11,14 @@ This directory contains the shared browser-test workflow assets for this project
 - `config.json`
   - The generated bflow configuration for this repo.
 
+## Prerequisites
+
+Before you use replay or diagnose workflows in any agent, install `chrome-devtools-mcp` in that agent first:
+
+- https://github.com/ChromeDevTools/chrome-devtools-mcp
+
+If you plan to use exploration workflows, install your `agent-browser` integration as well.
+
 ## Recommended workflow
 
 1. Use `/bflow-new` to create a new case draft from a natural-language test description.
