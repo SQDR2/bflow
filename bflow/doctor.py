@@ -66,6 +66,7 @@ def check_shared_assets(report: DoctorReport, config: InitConfig) -> None:
         config.project_root / ".bflow" / "prompts" / "replay.md",
         config.project_root / ".bflow" / "prompts" / "diagnose.md",
         config.project_root / ".bflow" / "cases" / "README.md",
+        config.project_root / ".bflow" / "reports" / "README.md",
         config.project_root / ".bflow" / "cases" / "templates" / "test-flow.template.yaml",
         config.project_root / ".bflow" / "cases" / "examples" / "login-admin-smoke.yaml",
     ]

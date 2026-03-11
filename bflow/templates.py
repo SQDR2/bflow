@@ -50,6 +50,7 @@ def shared_project_files(prefix: str, agents: list[str], scope: str) -> dict[str
         ".bflow/prompts/replay.md": replay_prompt(prefix),
         ".bflow/prompts/diagnose.md": diagnose_prompt(prefix),
         ".bflow/cases/README.md": cases_readme(),
+        ".bflow/reports/README.md": reports_readme(),
         ".bflow/cases/templates/test-flow.template.yaml": case_template(),
         ".bflow/cases/examples/login-admin-smoke.yaml": example_case(),
     }
@@ -66,6 +67,8 @@ This directory contains the shared browser-test workflow assets for this project
   - Workflow source prompts that describe how `{prefix}-new`, `{prefix}-explore`, `{prefix}-replay`, and `{prefix}-diagnose` should behave.
 - `cases/`
   - Reusable browser-test case definitions for this project.
+- `reports/`
+  - Durable replay-failure and diagnosis summaries for this project.
 - `agent-browser-setup.md`
     - Step-by-step setup guide for installing the `agent-browser` CLI and skill in this project.
 - `config.json`
@@ -86,8 +89,9 @@ If you plan to use exploration workflows, the current agent must have `agent-bro
 3. Write the confirmed steps back into the case file under `.bflow/cases/`.
 4. Update the case lifecycle so the file reflects whether it is still a draft or ready for replay.
 5. Use `/{prefix}-replay` to execute the stable steps with `chrome-devtools`.
-6. During replay or diagnose, if a page feature is ambiguous, pause browser actions, inspect the relevant workspace code, and then continue the same workflow with that code-backed understanding.
-7. Use `/{prefix}-diagnose` when a replay fails and you need console/network/DOM evidence.
+6. If replay fails, write or update a report under `.bflow/reports/` so the failure summary and evidence survive outside the chat transcript.
+7. During replay or diagnose, if a page feature is ambiguous, pause browser actions, inspect the relevant workspace code, and then continue the same workflow with that code-backed understanding.
+8. Use `/{prefix}-diagnose` when a replay fails and you need console/network/DOM evidence.
 
 ## Where to add new test flows
 
@@ -96,6 +100,29 @@ Create new case files under `.bflow/cases/`. A good default is:
 - `.bflow/cases/<domain>-<flow>-smoke.yaml`
 
 Start from `.bflow/cases/templates/test-flow.template.yaml`.
+"""
+
+
+def reports_readme() -> str:
+    return """# Replay And Diagnosis Reports
+
+This directory stores durable failure summaries for browser-test cases.
+
+## Recommended file naming
+
+- `<case-name>.latest.md`
+
+## Minimum report contents
+
+- case file path
+- workflow name
+- execution timestamp
+- failed step or assertion
+- visible symptom
+- evidence summary
+- artifact paths or references
+- most likely root cause
+- next recommended action
 """
 
 
@@ -290,13 +317,14 @@ The workflow should:
 4. Use that code lookup only to clarify the current step or assertion. Do not freely re-explore the route or invent behavior that is not supported by the case or the code.
 5. Check the listed `assertions`.
 6. Update `lifecycle.last_replayed_at` to the current ISO 8601 timestamp.
-7. If the replay passes, set `lifecycle.last_status` to `passed`; otherwise set it to `failed`.
-8. Capture requested `artifacts` on failure.
-9. Summarize:
+7. If the replay passes, set `lifecycle.last_status` to `passed`.
+8. If the replay fails, set `lifecycle.last_status` to `failed`, write or update `.bflow/reports/<case-name>.latest.md`, and save that relative path to `lifecycle.last_failure_report`.
+9. Capture requested `artifacts` on failure.
+10. Summarize:
    - executed steps
    - assertion results
    - failed step
-    - code evidence used for clarification
+   - code evidence used for clarification
    - console summary
    - network summary
 """
@@ -318,8 +346,9 @@ The workflow should:
 3. If the page behavior or failed control is still unclear, inspect the relevant workspace source code to understand the feature contract, conditional rendering, permissions, or request flow before concluding.
 4. Keep that code lookup tightly scoped to the failure under diagnosis. Do not rerun the full exploration flow unless the user asks.
 5. Update `lifecycle.last_diagnosed_at` to the current ISO 8601 timestamp.
-6. Do not rerun the full business flow unless the user asks.
-7. Summarize the most likely root cause, the code evidence used, and the next recommended action.
+6. Write or update `.bflow/reports/<case-name>.latest.md` with the failed case path, failure summary, evidence, root cause hypothesis, and next recommended action, then save that relative path to `lifecycle.last_failure_report`.
+7. Do not rerun the full business flow unless the user asks.
+8. Summarize the most likely root cause, the code evidence used, and the next recommended action.
 """
 
 
@@ -352,6 +381,7 @@ Each file in this directory is a reusable browser-test definition.
 4. Use `bflow-explore` if the page path is not stable yet.
 5. Move the case to `ready_for_replay` after exploration confirms the steps.
 6. Keep the confirmed steps in the case file for future replays.
+7. Store replay failures and diagnosis summaries under `.bflow/reports/`.
 """
 
 
@@ -387,6 +417,7 @@ lifecycle:
   last_explored_at: null
   last_replayed_at: null
   last_diagnosed_at: null
+  last_failure_report: null
 
 # Tool routing. In most cases the defaults are correct:
 # - explore: agent_browser
@@ -450,6 +481,7 @@ lifecycle:
   last_explored_at: null
   last_replayed_at: null
   last_diagnosed_at: null
+  last_failure_report: null
 mode:
   explore: agent_browser
   replay: chrome_devtools
@@ -500,6 +532,7 @@ Important files:
 - `.bflow/README.md`
 - `.bflow/prompts/`
 - `.bflow/cases/`
+- `.bflow/reports/`
 
 If the user types one of these aliases, treat it as a workflow command:
 
@@ -512,8 +545,8 @@ Workflow rules:
 
 1. `/{prefix}-new` creates or updates the case file, keeps `lifecycle.stage=draft`, and ends by recommending `/{prefix}-explore`.
 2. `/{prefix}-explore` is for path discovery, not final regression execution, and should promote the case to `ready_for_replay` when the steps are stable.
-3. `/{prefix}-replay` runs the saved steps without replanning the business flow and updates replay timestamps/status.
-4. `/{prefix}-diagnose` focuses on evidence and root cause, not broad re-exploration, and updates diagnosis metadata.
+3. `/{prefix}-replay` runs the saved steps without replanning the business flow, updates replay timestamps/status, and writes failure summaries to `.bflow/reports/` when needed.
+4. `/{prefix}-diagnose` focuses on evidence and root cause, not broad re-exploration, and updates diagnosis metadata plus the latest failure report.
 """
 
 
@@ -604,18 +637,22 @@ def workflow_body(prefix: str, workflow: str, request_expr: str) -> str:
     5. Keep that code lookup scoped to clarifying the current step or assertion. Do not turn it into broad re-exploration.
     6. Check all `assertions`.
     7. Write the current ISO 8601 timestamp to `lifecycle.last_replayed_at`.
-    8. Set `lifecycle.last_status` to `passed` or `failed` based on the outcome.
-    9. If the flow fails because the saved path is stale, set `lifecycle.stage` to `needs_diagnosis`.
-    10. Capture requested `artifacts` on failure.
-    11. Report executed steps, assertion results, any code evidence used for clarification, and failure evidence.""",
+    8. If the replay passes, set `lifecycle.last_status=passed`.
+    9. If the replay fails, set `lifecycle.last_status=failed`, write or update `.bflow/reports/<case-name>.latest.md`, and save that relative path to `lifecycle.last_failure_report`.
+    10. The report must name the case file, failed step or assertion, visible symptom, evidence summary, requested artifacts, and next recommended action.
+    11. If the flow fails because the saved path is stale, set `lifecycle.stage` to `needs_diagnosis`.
+    12. Capture requested `artifacts` on failure.
+    13. Report executed steps, assertion results, any code evidence used for clarification, and failure evidence.""",
         "diagnose": """1. Read `.bflow/README.md` and the requested case file under `.bflow/cases/`.
     2. Focus on the failed step and current page state.
     3. Use `chrome-devtools` to inspect console errors, failed requests, missing DOM targets, and blocking overlays.
     4. If the page behavior or failed control is still unclear, inspect the relevant workspace source code to understand the feature contract, conditional rendering, permissions, or request flow.
     5. Keep that code lookup scoped to the current failure instead of broad re-exploration.
     6. Write the current ISO 8601 timestamp to `lifecycle.last_diagnosed_at` and keep `lifecycle.stage=needs_diagnosis` until the route is fixed.
-    7. Do not rerun the entire business flow unless the user asks.
-    8. Report the most likely root cause, the code evidence used, and the next action.""",
+    7. Write or update `.bflow/reports/<case-name>.latest.md` and save that relative path to `lifecycle.last_failure_report`.
+    8. The report must summarize the failure, evidence, root cause hypothesis, and next action.
+    9. Do not rerun the entire business flow unless the user asks.
+    10. Report the most likely root cause, the code evidence used, and the next action.""",
     }
     return f"""# {prefix}-{workflow}
 

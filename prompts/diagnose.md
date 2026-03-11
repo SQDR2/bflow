@@ -24,12 +24,14 @@
 3. 如果页面功能语义、条件渲染、权限逻辑或接口行为仍然不明确，继续到工作区代码里定位相关源码，再回到当前失败点做判断。
 4. 代码回查只服务于当前失败原因定位，不要把 diagnose 扩展成新的全链路探索。
 5. 如果有必要，再补充截图建议。
-6. 输出最可能的根因、用到的代码证据和建议下一步。
-7. 除非页面路径已经明显失效，否则不要回到自由探索模式。
+6. 把诊断结论、证据和建议下一步写回 `.bflow/reports/<case-name>.latest.md`，并把 case 的 `lifecycle.last_failure_report` 指向它。
+7. 输出最可能的根因、用到的代码证据和建议下一步。
+8. 除非页面路径已经明显失效，否则不要回到自由探索模式。
 
 输出格式:
 {
   "status": "diagnosed",
+  "report_path": ".bflow/reports/<case-name>.latest.md",
   "failed_step": "...",
   "console_summary": [],
   "network_summary": [],

@@ -53,7 +53,9 @@ notes:
 ### 再回放
 
 把 case 的 `steps`、`assertions` 发给 [prompts/replay.md](/home/zlw/github/bflow/prompts/replay.md)，让 `chrome-devtools` 执行。
+回放失败后，把失败摘要和证据写到 `.bflow/reports/<case-name>.latest.md`，并把 case 的 `lifecycle.last_failure_report` 指向它。
 
 ### 失败后诊断
 
 把失败步骤和现象发给 [prompts/diagnose.md](/home/zlw/github/bflow/prompts/diagnose.md)。
+诊断结论也继续更新同一个 `.bflow/reports/<case-name>.latest.md` 文件。

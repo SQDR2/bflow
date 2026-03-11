@@ -39,12 +39,14 @@
 │   ├── explore.md
 │   ├── replay.md
 │   └── diagnose.md
-└── cases/
+├── cases/
     ├── README.md
     ├── templates/
     │   └── test-flow.template.yaml
     └── examples/
         └── login-admin-smoke.yaml
+└── reports/
+    └── README.md
 ```
 
 这个 `.bflow/` 目录就是项目级的工作流资产库。
@@ -211,6 +213,7 @@ bflow doctor
 - 如果页面功能语义不清晰，可以先查看相关源码再继续执行
 - 回放时间戳和最近一次结果会写入 `lifecycle`
 - 失败时采集证据
+- 失败运行会总结到 `.bflow/reports/<case-name>.latest.md`
 
 ### 4. 排查失败
 
@@ -224,6 +227,7 @@ bflow doctor
 - 汇总 console、network 和 DOM 证据
 - 必要时会结合相关源码解释页面行为或失败原因
 - 诊断时间戳会写入 `lifecycle`
+- 会继续更新最新的 `.bflow/reports/<case-name>.latest.md` 报告
 - 给出下一步修复建议
 
 ## 生成文件的职责
@@ -253,6 +257,10 @@ bflow doctor
   - 完整参考示例
 
 每个 case 现在还会包含一个 `lifecycle` 字段，用来记录当前流程是草稿、可回放还是待诊断状态。
+
+### `.bflow/reports/`
+
+这里存放可长期保留的 replay 失败总结和 diagnose 结果。回放失败后，应写入或更新类似 `.bflow/reports/admin-login-smoke.latest.md` 这样的报告文件，并把 case 的 `lifecycle.last_failure_report` 指向它。
 
 ### `AGENTS.md`
 

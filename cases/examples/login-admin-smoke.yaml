@@ -1,6 +1,14 @@
 name: login_admin_smoke
 base_url: http://localhost:8080
 goal: admin user can log in and enter the admin console
+lifecycle:
+  stage: ready_for_replay
+  ready_for_replay: true
+  last_status: not_run
+  last_explored_at: null
+  last_replayed_at: null
+  last_diagnosed_at: null
+  last_failure_report: null
 mode:
   explore: agent_browser
   replay: chrome_devtools

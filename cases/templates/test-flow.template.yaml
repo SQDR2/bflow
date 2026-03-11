@@ -11,6 +11,20 @@ base_url: http://localhost:8080
 # 例如: admin user can log in and open admin console
 goal: describe the business goal
 
+# 生命周期元数据。
+# 推荐阶段：
+# - draft: 已创建但路径还没确认
+# - ready_for_replay: 步骤稳定，可直接回放
+# - needs_diagnosis: 最近一次回放失败，需要诊断
+lifecycle:
+  stage: draft
+  ready_for_replay: false
+  last_status: not_run
+  last_explored_at: null
+  last_replayed_at: null
+  last_diagnosed_at: null
+  last_failure_report: null
+
 # 工具分工。通常保持默认即可：
 # - explore: 让 agent_browser 先探索路径
 # - replay: 让 chrome_devtools 按步骤执行

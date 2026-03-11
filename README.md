@@ -39,12 +39,14 @@ Running `bflow init` in a project creates a shared `.bflow/` directory:
 │   ├── explore.md
 │   ├── replay.md
 │   └── diagnose.md
-└── cases/
+├── cases/
     ├── README.md
     ├── templates/
     │   └── test-flow.template.yaml
     └── examples/
         └── login-admin-smoke.yaml
+└── reports/
+    └── README.md
 ```
 
 This `.bflow/` directory is the project-local workflow library.
@@ -209,6 +211,7 @@ Expected result:
 - if a page feature is ambiguous, the workflow may inspect the relevant workspace source code before continuing
 - replay timestamps and the last result are written into `lifecycle`
 - failure evidence is captured when needed
+- failed runs are summarized under `.bflow/reports/<case-name>.latest.md`
 
 ### 4. Diagnose a Failure
 
@@ -222,6 +225,7 @@ Expected result:
 - console, network, and DOM evidence is summarized
 - when needed, the relevant source code is inspected to explain unclear UI behavior or failure causes
 - diagnosis timestamps are written into `lifecycle`
+- the latest `.bflow/reports/<case-name>.latest.md` report is updated
 - the next repair action is suggested
 
 ## Generated File Responsibilities
@@ -251,6 +255,10 @@ This directory stores reusable browser-test assets for the project.
   - full reference example
 
 Each case also contains a `lifecycle` block so the workflow can track whether the flow is still a draft, ready for replay, or waiting for diagnosis.
+
+### `.bflow/reports/`
+
+This directory stores durable replay-failure and diagnosis summaries. A failed replay should write or update a report such as `.bflow/reports/admin-login-smoke.latest.md`, and the case `lifecycle.last_failure_report` should point to it.
 
 ### `AGENTS.md`
 

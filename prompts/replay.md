@@ -27,17 +27,20 @@
 4. 代码回查只用于澄清当前步骤或断言，不要把 replay 退化成新的路径探索。
 5. 如果失败，立即记录:
    - failed_step
+   - report_path: .bflow/reports/<case-name>.latest.md
    - screenshot suggestion
    - console summary
    - network summary
-6. 如果用了代码回查，补充记录相关代码证据摘要。
-7. 关键提交动作前后记录 network 状态。
-8. 不要因为页面变化而自行改写业务目标。
+6. 把失败摘要、证据、下一步建议写入 `.bflow/reports/<case-name>.latest.md`，并把 case 的 `lifecycle.last_failure_report` 指向它。
+7. 如果用了代码回查，补充记录相关代码证据摘要。
+8. 关键提交动作前后记录 network 状态。
+9. 不要因为页面变化而自行改写业务目标。
 
 输出格式:
 {
   "case": "...",
   "status": "passed|failed",
+  "report_path": ".bflow/reports/<case-name>.latest.md|null",
   "executed_steps": [],
   "assertions": {},
   "artifacts": {},
