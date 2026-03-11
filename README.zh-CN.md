@@ -51,7 +51,7 @@
 
 其中 `.bflow/agent-browser-setup.md` 会集中记录当前项目里 `agent-browser` 的 CLI 安装、skills 安装、验证方式以及与 `bflow-explore` 的配合用法。
 
-同时，`bflow` 会按你选择的 agent 写入项目内的适配文件。这样设计是刻意的，因为所有 `bflow-*` 指令都依赖当前工作区里的 `.bflow/` 目录。
+同时，`bflow` 会为所有 agent 写入项目级工作流资产，并把命令适配文件安装到对应 agent 真正能发现它们的位置。
 
 - `Claude Code`
   - `.claude/skills/`
@@ -61,6 +61,7 @@
   - `.github/prompts/` 和 `.github/copilot-instructions.md`
 - `Codex`
   - `AGENTS.md`
+  - `~/.codex/prompts/`
 
 ## 前置依赖
 
@@ -256,6 +257,10 @@ bflow doctor
 ### `AGENTS.md`
 
 这是项目级的回退规则文件。对于更依赖仓库规则而不是 slash command 的 agent 表面，它很重要。
+
+### `~/.codex/prompts/`
+
+当选择 `codex` 时，`bflow init` 还会把 prompt 文件安装到 `~/.codex/prompts/`，这样 `/bflow-new`、`/bflow-explore`、`/bflow-replay`、`/bflow-diagnose` 才能出现在 Codex 的 slash command 列表里。这些 prompt 仍然会操作当前工作区下的 `.bflow/` 目录。
 
 ## 什么时候要新增 case 文件
 

@@ -51,7 +51,7 @@ This `.bflow/` directory is the project-local workflow library.
 
 The `.bflow/agent-browser-setup.md` file is the single place that documents how to install the `agent-browser` CLI, add the correct skill for the selected agent, verify the setup, and then use it with `bflow-explore`.
 
-`bflow` also installs project-local agent adapter files based on the agents you choose. This is intentional because all `bflow-*` commands rely on the current workspace `.bflow/` directory.
+`bflow` installs project-local workflow assets for every agent, and installs command adapters where each agent can actually discover them.
 
 - `Claude Code`
   - `.claude/skills/`
@@ -61,6 +61,7 @@ The `.bflow/agent-browser-setup.md` file is the single place that documents how 
   - `.github/prompts/` and `.github/copilot-instructions.md`
 - `Codex`
   - `AGENTS.md`
+  - `~/.codex/prompts/`
 
 ## Prerequisites
 
@@ -254,6 +255,10 @@ Each case also contains a `lifecycle` block so the workflow can track whether th
 ### `AGENTS.md`
 
 This is the project-level fallback instruction file. It matters for agent surfaces that rely more on repository guidance than native slash commands.
+
+### `~/.codex/prompts/`
+
+When `codex` is selected, `bflow init` also installs prompt files into `~/.codex/prompts/` so `/bflow-new`, `/bflow-explore`, `/bflow-replay`, and `/bflow-diagnose` appear in the Codex slash-command picker. Those prompts still operate on the current workspace `.bflow/` directory.
 
 ## When to Add a New Case File
 

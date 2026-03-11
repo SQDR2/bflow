@@ -8,6 +8,7 @@ from bflow.templates import (
     SUPPORTED_AGENTS,
     agents_block,
     copilot_instructions_block,
+    global_agent_files,
     project_agent_files,
     shared_project_files,
 )
@@ -53,10 +54,11 @@ def run_init(config: InitConfig) -> InitReport:
         install_copilot_instructions(config, report)
 
     install_project_agent_files(config, report)
+    install_required_global_agent_files(config, report)
 
     if requested_scope not in {None, "project"}:
         report.warnings.append(
-            "bflow init now always installs project-local files because bflow commands depend on the current workspace .bflow/ directory."
+            "bflow init now always installs project-local workflow assets; only agent-specific command adapters that require home-directory locations are written globally."
         )
 
     return report
@@ -98,6 +100,15 @@ def install_project_agent_files(config: InitConfig, report: InitReport) -> None:
         files = project_agent_files(config.prefix, agent)
         for relative_path, content in files.items():
             path = config.project_root / relative_path
+            write_file(path, content, config.force, report)
+
+
+def install_required_global_agent_files(config: InitConfig, report: InitReport) -> None:
+    for agent in config.agents:
+        if agent != "codex":
+            continue
+        files = global_agent_files(config.prefix, agent, config.home_dir)
+        for path, content in files.items():
             write_file(path, content, config.force, report)
 
 

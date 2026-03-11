@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from bflow.installer import InitConfig, normalize_scope
-from bflow.templates import project_agent_files
+from bflow.templates import global_agent_files, project_agent_files
 
 
 @dataclass
@@ -93,7 +93,21 @@ def check_project_adapters(report: DoctorReport, config: InitConfig) -> None:
 
 
 def check_global_adapters(report: DoctorReport, config: InitConfig) -> None:
-    report.add("global-adapters", "ok", "Global adapter files are no longer used. bflow commands rely on project-local assets under .bflow/.")
+    expected: list[Path] = []
+    for agent in config.agents:
+        if agent != "codex":
+            continue
+        expected.extend(global_agent_files(config.prefix, agent, config.home_dir).keys())
+
+    if not expected:
+        report.add("global-adapters", "ok", "No global adapter files are required for the selected agents.")
+        return
+
+    missing = [str(path) for path in expected if not path.exists()]
+    if missing:
+        report.add("global-adapters", "fail", "Missing required global adapter files:\n- " + "\n- ".join(missing))
+    else:
+        report.add("global-adapters", "ok", "Required global adapter files are present.")
 
 
 def summarize_status(report: DoctorReport) -> str:

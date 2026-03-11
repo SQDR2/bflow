@@ -30,6 +30,7 @@ class InitTest(unittest.TestCase):
             self.assertTrue((project_root / ".opencode" / "commands" / "bflow-replay.md").exists())
             self.assertTrue((project_root / ".github" / "prompts" / "bflow-diagnose.prompt.md").exists())
             self.assertTrue((project_root / "AGENTS.md").exists())
+            self.assertTrue((home_dir / ".codex" / "prompts" / "bflow-new.md").exists())
             claude_skill = (project_root / ".claude" / "skills" / "bflow-new" / "SKILL.md").read_text(encoding="utf-8")
             self.assertIn('argument-hint: "[natural-language test request]"', claude_skill)
             self.assertIn("Example: /bflow-new", claude_skill)
@@ -42,6 +43,9 @@ class InitTest(unittest.TestCase):
             self.assertIn("Do not use `chrome-devtools`, `chrome-devtools-mcp`", explore_prompt)
             diagnose_prompt = (project_root / ".github" / "prompts" / "bflow-diagnose.prompt.md").read_text(encoding="utf-8")
             self.assertIn("inspect the relevant workspace source code", diagnose_prompt)
+            codex_prompt = (home_dir / ".codex" / "prompts" / "bflow-explore.md").read_text(encoding="utf-8")
+            self.assertIn("User input: $ARGUMENTS", codex_prompt)
+            self.assertIn("Do not use `chrome-devtools`, `chrome-devtools-mcp`", codex_prompt)
             case_template = (project_root / ".bflow" / "cases" / "templates" / "test-flow.template.yaml").read_text(encoding="utf-8")
             self.assertIn("lifecycle:", case_template)
             self.assertIn("stage: draft", case_template)
@@ -66,7 +70,8 @@ class InitTest(unittest.TestCase):
             self.assertTrue((project_root / ".github" / "copilot-instructions.md").exists())
             self.assertTrue((project_root / ".github" / "prompts" / "bflow-new.prompt.md").exists())
             self.assertFalse((home_dir / ".config" / "Code" / "User" / "prompts" / "bflow-new.prompt.md").exists())
-            self.assertTrue(any("bflow init now always installs project-local files" in warning for warning in report.warnings))
+            self.assertTrue((home_dir / ".codex" / "prompts" / "bflow-new.md").exists())
+            self.assertTrue(any("agent-specific command adapters that require home-directory locations" in warning for warning in report.warnings))
 
     def test_update_uses_saved_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -106,15 +111,38 @@ class InitTest(unittest.TestCase):
             self.assertEqual(names["project-adapters"], "ok")
             self.assertEqual(names["global-adapters"], "ok")
 
+    def test_doctor_fails_when_codex_global_prompts_are_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            home_dir = Path(tmp) / "home"
+            project_root.mkdir()
+            run_init(
+                InitConfig(
+                    project_root=project_root,
+                    scope="project",
+                    agents=["codex"],
+                    prefix="bflow",
+                    home_dir=home_dir,
+                )
+            )
+            prompt_path = home_dir / ".codex" / "prompts" / "bflow-new.md"
+            prompt_path.unlink()
+            report = run_doctor(project_root=project_root, home_dir=home_dir)
+            self.assertTrue(report.has_failures)
+            names = {check.name: check.status for check in report.checks}
+            self.assertEqual(names["global-adapters"], "fail")
+
     def test_print_report_lists_both_browser_tool_prerequisites(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp) / "project"
+            home_dir = Path(tmp) / "home"
             project_root.mkdir()
             config = InitConfig(
                 project_root=project_root,
                 scope="project",
                 agents=["codex"],
                 prefix="bflow",
+                home_dir=home_dir,
             )
             report = run_init(config)
             stdout = io.StringIO()
