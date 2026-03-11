@@ -28,7 +28,8 @@ If you plan to use exploration workflows, the current agent must have `agent-bro
 3. Write the confirmed steps back into the case file under `.bflow/cases/`.
 4. Update the case lifecycle so the file reflects whether it is still a draft or ready for replay.
 5. Use `/bflow-replay` to execute the stable steps with `chrome-devtools`.
-6. Use `/bflow-diagnose` when a replay fails and you need console/network/DOM evidence.
+6. During replay or diagnose, if a page feature is ambiguous, pause browser actions, inspect the relevant workspace code, and then continue the same workflow with that code-backed understanding.
+7. Use `/bflow-diagnose` when a replay fails and you need console/network/DOM evidence.
 
 ## Where to add new test flows
 

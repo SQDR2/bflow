@@ -86,7 +86,8 @@ If you plan to use exploration workflows, the current agent must have `agent-bro
 3. Write the confirmed steps back into the case file under `.bflow/cases/`.
 4. Update the case lifecycle so the file reflects whether it is still a draft or ready for replay.
 5. Use `/{prefix}-replay` to execute the stable steps with `chrome-devtools`.
-6. Use `/{prefix}-diagnose` when a replay fails and you need console/network/DOM evidence.
+6. During replay or diagnose, if a page feature is ambiguous, pause browser actions, inspect the relevant workspace code, and then continue the same workflow with that code-backed understanding.
+7. Use `/{prefix}-diagnose` when a replay fails and you need console/network/DOM evidence.
 
 ## Where to add new test flows
 
@@ -219,6 +220,8 @@ Routing rules:
 4. If a replay fails, use `{prefix}-diagnose`.
 5. During `{prefix}-explore`, only `agent_browser` may be used for browser actions. If it is unavailable, stop and return setup guidance based on `.bflow/config.json` and `.bflow/agent-browser-setup.md`.
 6. Never use `chrome_devtools` or `chrome-devtools-mcp` as a fallback during `{prefix}-explore`.
+7. During `{prefix}-replay` or `{prefix}-diagnose`, if a page feature, label, route, or interaction meaning is unclear, pause browser actions and inspect the relevant workspace source code to disambiguate it.
+8. Limit that code lookup to understanding the current feature or failure. Do not turn it into broad replanning or a new exploration pass.
 ```
 """
 
@@ -283,14 +286,17 @@ The workflow should:
 
 1. Read the target case from `.bflow/cases/`.
 2. Execute the `steps` in order without replanning the flow.
-3. Check the listed `assertions`.
-4. Update `lifecycle.last_replayed_at` to the current ISO 8601 timestamp.
-5. If the replay passes, set `lifecycle.last_status` to `passed`; otherwise set it to `failed`.
-6. Capture requested `artifacts` on failure.
-7. Summarize:
+3. If a page feature or action target is ambiguous during execution, pause browser actions and inspect the relevant workspace code to understand the current UI behavior before continuing.
+4. Use that code lookup only to clarify the current step or assertion. Do not freely re-explore the route or invent behavior that is not supported by the case or the code.
+5. Check the listed `assertions`.
+6. Update `lifecycle.last_replayed_at` to the current ISO 8601 timestamp.
+7. If the replay passes, set `lifecycle.last_status` to `passed`; otherwise set it to `failed`.
+8. Capture requested `artifacts` on failure.
+9. Summarize:
    - executed steps
    - assertion results
    - failed step
+    - code evidence used for clarification
    - console summary
    - network summary
 """
@@ -309,9 +315,11 @@ The workflow should:
    - failed requests
    - missing DOM targets
    - blocking overlays or modals
-3. Update `lifecycle.last_diagnosed_at` to the current ISO 8601 timestamp.
-4. Do not rerun the full business flow unless the user asks.
-5. Summarize the most likely root cause and the next recommended action.
+3. If the page behavior or failed control is still unclear, inspect the relevant workspace source code to understand the feature contract, conditional rendering, permissions, or request flow before concluding.
+4. Keep that code lookup tightly scoped to the failure under diagnosis. Do not rerun the full exploration flow unless the user asks.
+5. Update `lifecycle.last_diagnosed_at` to the current ISO 8601 timestamp.
+6. Do not rerun the full business flow unless the user asks.
+7. Summarize the most likely root cause, the code evidence used, and the next recommended action.
 """
 
 
@@ -590,20 +598,24 @@ def workflow_body(prefix: str, workflow: str, request_expr: str) -> str:
 10. Record unstable selectors, modals, redirects, or login-state risks in `notes`.
 11. End by recommending `/{prefix}-replay`.""",
         "replay": """1. Read `.bflow/README.md` and the requested case file under `.bflow/cases/`.
-2. Use `chrome-devtools` to execute `steps` in order.
-3. Do not replan the route unless the case explicitly says exploration is still pending.
-4. Check all `assertions`.
-5. Write the current ISO 8601 timestamp to `lifecycle.last_replayed_at`.
-6. Set `lifecycle.last_status` to `passed` or `failed` based on the outcome.
-7. If the flow fails because the saved path is stale, set `lifecycle.stage` to `needs_diagnosis`.
-8. Capture requested `artifacts` on failure.
-9. Report executed steps, assertion results, and failure evidence.""",
+    2. Use `chrome-devtools` to execute `steps` in order.
+    3. Do not replan the route unless the case explicitly says exploration is still pending.
+    4. If a page feature, label, route, or interaction target is unclear, pause browser actions and inspect the relevant workspace source code before continuing.
+    5. Keep that code lookup scoped to clarifying the current step or assertion. Do not turn it into broad re-exploration.
+    6. Check all `assertions`.
+    7. Write the current ISO 8601 timestamp to `lifecycle.last_replayed_at`.
+    8. Set `lifecycle.last_status` to `passed` or `failed` based on the outcome.
+    9. If the flow fails because the saved path is stale, set `lifecycle.stage` to `needs_diagnosis`.
+    10. Capture requested `artifacts` on failure.
+    11. Report executed steps, assertion results, any code evidence used for clarification, and failure evidence.""",
         "diagnose": """1. Read `.bflow/README.md` and the requested case file under `.bflow/cases/`.
-2. Focus on the failed step and current page state.
-3. Use `chrome-devtools` to inspect console errors, failed requests, missing DOM targets, and blocking overlays.
-4. Write the current ISO 8601 timestamp to `lifecycle.last_diagnosed_at` and keep `lifecycle.stage=needs_diagnosis` until the route is fixed.
-5. Do not rerun the entire business flow unless the user asks.
-6. Report the most likely root cause and the next action.""",
+    2. Focus on the failed step and current page state.
+    3. Use `chrome-devtools` to inspect console errors, failed requests, missing DOM targets, and blocking overlays.
+    4. If the page behavior or failed control is still unclear, inspect the relevant workspace source code to understand the feature contract, conditional rendering, permissions, or request flow.
+    5. Keep that code lookup scoped to the current failure instead of broad re-exploration.
+    6. Write the current ISO 8601 timestamp to `lifecycle.last_diagnosed_at` and keep `lifecycle.stage=needs_diagnosis` until the route is fixed.
+    7. Do not rerun the entire business flow unless the user asks.
+    8. Report the most likely root cause, the code evidence used, and the next action.""",
     }
     return f"""# {prefix}-{workflow}
 

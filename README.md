@@ -22,6 +22,8 @@ These commands map to the following workflow stages:
 4. `diagnose`
    - Inspect replay failures with console, network, and DOM evidence
 
+When `chrome-devtools` is already running a replay or diagnosis and a page feature is ambiguous, the workflow may pause browser actions, inspect the relevant workspace code, and then continue the same workflow with that code-backed understanding.
+
 ## What `bflow init` Creates
 
 Running `bflow init` in a project creates a shared `.bflow/` directory:
@@ -203,6 +205,7 @@ Expected result:
 
 - `chrome-devtools` executes the saved `steps` in order
 - assertions are checked
+- if a page feature is ambiguous, the workflow may inspect the relevant workspace source code before continuing
 - replay timestamps and the last result are written into `lifecycle`
 - failure evidence is captured when needed
 
@@ -216,6 +219,7 @@ Expected result:
 
 - focus stays on the failed step instead of rerunning the whole flow
 - console, network, and DOM evidence is summarized
+- when needed, the relevant source code is inspected to explain unclear UI behavior or failure causes
 - diagnosis timestamps are written into `lifecycle`
 - the next repair action is suggested
 

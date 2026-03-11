@@ -14,4 +14,6 @@ Routing rules:
 4. If a replay fails, use `bflow-diagnose`.
 5. During `bflow-explore`, only `agent_browser` may be used for browser actions. If it is unavailable, stop and return setup guidance based on `.bflow/config.json` and `.bflow/agent-browser-setup.md`.
 6. Never use `chrome_devtools` or `chrome-devtools-mcp` as a fallback during `bflow-explore`.
+7. During `bflow-replay` or `bflow-diagnose`, if a page feature, label, route, or interaction meaning is unclear, pause browser actions and inspect the relevant workspace source code to disambiguate it.
+8. Limit that code lookup to understanding the current feature or failure. Do not turn it into broad replanning or a new exploration pass.
 ```

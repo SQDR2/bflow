@@ -22,6 +22,8 @@
 4. `diagnose`
    - 在回放失败后收集 console、network 和 DOM 证据
 
+当 `chrome-devtools` 已经进入 replay 或 diagnose 阶段、但页面上的功能语义仍然不明确时，工作流可以先暂停浏览器动作，回到工作区代码里定位相关源码，再带着代码理解继续当前阶段。
+
 ## `bflow init` 会生成什么
 
 在项目里执行 `bflow init` 后，会生成一个共享的 `.bflow/` 目录：
@@ -205,6 +207,7 @@ bflow doctor
 
 - `chrome-devtools` 按 `steps` 顺序执行
 - 校验 `assertions`
+- 如果页面功能语义不清晰，可以先查看相关源码再继续执行
 - 回放时间戳和最近一次结果会写入 `lifecycle`
 - 失败时采集证据
 
@@ -218,6 +221,7 @@ bflow doctor
 
 - 聚焦失败步骤而不是整条链路重跑
 - 汇总 console、network 和 DOM 证据
+- 必要时会结合相关源码解释页面行为或失败原因
 - 诊断时间戳会写入 `lifecycle`
 - 给出下一步修复建议
 
